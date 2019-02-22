@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Lua中的泛型for循环中的一个小问题]]></title>
+    <url>%2F2019%2F02%2F22%2F19-2-22%2F</url>
+    <content type="text"><![CDATA[之前公司需要编写一个lua脚本进行相关的功能测试，于是之前没用过这个语言的我开始了对它的学习。其中泛型for循环的写法如下： 1234a = &#123;"one","two","three"&#125;for i,v in ipairs(a) do print(i,v)end 这里是直接使用ipairs迭代器函数对a这个table进行了遍历，从而打印出a这个表的全部字段。看到这里，我想到了除了加上ipairs或者pairs，还会不会有其他的遍历方法，比如我直接加上表名： 12for i,v in a do... 这样是否也可以达到遍历的效果？首先在网上进行查询，发现有人问了这个问题，并且在提问中非常肯定的说这个写法没有任何问题（他给出的例子是一个游戏脚本），并且询问其中的原理。然而我自己试了下这种用法，并不能通过语法检查。 继续进行搜索，在各种文章博客网站中见到的泛型for后面加的全都是ipairs或者pairs，并且将这两者的区别讲了一遍又一遍。但是我始终没有找到哪篇讲in的后面能不能加其他东西的文章，除了看到这么一个例子： 123456789101112function square(iteratorMaxCount,currentNumber) if currentNumber&lt;iteratorMaxCount then currentNumber = currentNumber+1 return currentNumber, currentNumber*currentNumber endend for i,n in square,3,0 --实现了1-3每个数字的平方遍历。do print(i,n)end 算是一种不同的用法吧。 还是直接看官方文档最省事，打开Lua manual，定位到For Statement中的generic for loop处。有如下说明:The generic for statement works over functions, called iterators. On each iteration, the iterator function is called to produce a new value, stopping when this new value is nil. The generic for loop has the following syntax: 12stat ::= for namelist in explist do block endnamelist ::= Name &#123;',' Name&#125; Note the following: explist is evaluated only once. Its results are an iterator function, a state, and an initial value for the first iterator variable. f, s, and var are invisible variables. The names are here for explanatory purposes only. You can use break to exit a for loop. The loop variables var_i are local to the loop; you cannot use their values after the for ends. If you need these values, then assign them to other variables before breaking or exiting the loop. 大意：泛型for语句中in后面跟的是叫做迭代器的东西(比如那个函数，比如ipairs)。每一次迭代函数都会产生一个新值，直到这个值为nil为止。 具体注意事项：迭代器返回3个值，分别是这个迭代器函数，一个状态常量，一个控制变量（对应for i,v中的i和v这两个变量。）迭代器只会初始化一次，即使后面有循环也不会多次初始化。 可以使用break退出循环，并且其中的i,v是局部变量，for结束后值不会保留。如果需要这个值需要自己在里面接收。 至此已经完全清楚了：泛型for循环后加的必须是一个返回三个参数的迭代器（迭代器函数+状态常量+控制变量），其他的写法均为错误。ipairs和pairs都会返回这三个参数，而我上面列举的那个遍历数字并输出其平方的例子中是直接显式传入3个参数的。]]></content>
+      <categories>
+        <category>脚本语言</category>
+      </categories>
+      <tags>
+        <tag>Lua</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[Jenkins的定时构建中的‘H']]></title>
     <url>%2F2019%2F02%2F17%2F19-2-17%2F</url>
     <content type="text"><![CDATA[前一阵在jenkins新建了一个项目，配置到定时构建这里的时候因为自己是第一次用，所以一边在网上查它的语法，一边在看官方给的注解。看了一会以后感觉可以写出达到自己预期的构建时间了，不过还有一个问题就是这个H到底是个什么东西？在网上查的时候好像也没有看见对它的解释。 先来看一下这个由5部分构成的定时构建参数吧。这五部分分别代表： minute hour day month dayofweekminute:从0-59的整数hour:从0-23的整数day:从1-31的整数。当然需要符合当月的最大日期month:从1-12的整数dayofweek:从0-7的整数，代表一周之内的第几天。0或7代表周日。 然后，*的意思代表“所有”。这时候我心想要的效果是每天的早上6点和晚上20点进行一次自动构建，所以我填写的参数是：* 6,20 * * *这时候底下弹出一个黄色感叹号。大概意思是告诉我不推荐这种写法，推测我是想在6，20点中的某一分钟开始进行构建，建议我改成H 6,20 * * *。这时候我才发现我写的意思是每分钟都执行构建！于是更改了以后，底下的提示信息输出了下一次构建的时间，是当日的晚上8点15分(这时候是下午。)再仔细看了看英文注解，这个H的意思说白了就是一个随机值，但这个随机值并不是通过什么随机函数或种子产生的，它是根据你的项目名生成的，即每个项目都会有不同的随机构建时间。 最后再说一点别的写法：*/5表示每5(分钟/小时/日…)整数间的-表示整数列，如1-4表示1，2，3，4指定数值用逗号分隔，比如我上面的6，20。]]></content>
       <categories>
-        <category>技术</category>
+        <category>构建相关</category>
       </categories>
       <tags>
         <tag>jenkins</tag>
