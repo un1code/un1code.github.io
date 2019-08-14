@@ -1,6 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[高度塌陷问题的解决方法]]></title>
+    <url>%2F2019%2F03%2F07%2F19-3-7%2F</url>
+    <content type="text"><![CDATA[&emsp;&emsp;相信在编写html的时候，大家总会遇到各种莫名奇妙的错误。自己写的结构，自己写的样式，表现出来的却和预想之中完全不同。今天我就来讲讲一个比较常见的问题——高度塌陷问题。 1.问题背景和描述&emsp;&emsp;先看这段代码。1234567891011121314151617181920212223242526272829&lt;!DOCTYPE html&gt;&lt;html&gt; &lt;head&gt; &lt;meta charset="utf-8"&gt; &lt;title&gt;&lt;/title&gt; &lt;style type="text/css"&gt; .box1&#123; border: 1px red solid; &#125; .box2&#123; width: 100px; height: 100px; background-color: blue; &#125; .box3&#123; width: 100%; height: 100px; background-color:orange; &#125; &lt;/style&gt; &lt;/head&gt; &lt;body&gt; &lt;div class="box1"&gt; &lt;div class="box2"&gt;&lt;/div&gt; &lt;/div&gt; &lt;div class="box3"&gt;&lt;/div&gt; &lt;/body&gt;&lt;/html&gt; &emsp;&emsp;很明显，这段代码描述了一个class为box1的div作为父元素包裹了一个class为box2的div。它们两个作为div都是块元素。显示的效果如下。从样式中我们可以看到，我们并没有给box1设置高度，也就是说box1的高度完全是由子元素box2的高度来支撑的。现在，我们将box2设置为浮动，看看会发生什么效果。我们看到，不但边框“塌”了，而且底下的box3也向上浮动，打乱了原来的排版。这是因为box2设置为浮动之后脱离了文档流，box1失去了支撑的子元素所以高度塌陷。 2.解决方案1.给父元素的高度写死&emsp;&emsp;这是最蠢的办法。缺点显而易见，如果子元素的大小进行了改变那么父元素也要跟着调整，十分麻烦。开发中绝对不能使用这种方法。 2.开启BFC/HasLayoutBFC是什么？根据W3C标准，在页面中的元素都有一个隐藏的属性：Block Formatting Context（BFC）块级格式化环境该属性可以设置打开或者关闭。默认是关闭的。开启之后,元素将具有以下特性： 1.父元素的垂直外边距不会和子元素重叠。（可以解决margin重叠问题） 2.开启BFC的元素不会被浮动元素覆盖。 3.开启BFC的元素可以包含浮动的子元素。高度塌陷的根本原因就是父元素无法包含浮动的子元素。所以只需设置这个就可以解决。 如何开启BFC？因为是隐藏属性所以无法直接开启，只能间接开启。方法有很多。 1.设置元素浮动 2.设置元素绝对定位 3.设置元素display为inline-block。 4.将元素的overflow设置为一个非visible值。 1.使用浮动虽然可以表面解决高度塌陷，使得父元素被撑开。但是会导致父元素的宽度丢失而且会导致下边的元素上移，排版打乱。不推荐2.也不推荐3.可以解决问题，排版不会乱。但是还会导致宽度丢失。4.副作用最小。解决塌陷问题而且宽度不会丢失。一般设置auto或者hidden。 BFC的IE6兼容：另一个隐藏属性HasLayout我们在业界毒瘤IE6中，BFC是没法起作用的。但是还好IE6中也有一个隐藏属性:HasLayout。该属性的作用和BFC类似。HasLayout的开启方法也很多（指定宽度就是其中之一）。副作用最小的方法将元素的zoom设置为1即可。zoom表示放大，写几就是放大几倍。放大1倍其实就是没放大，副作用最小。该方法只支持IE且IE7及以下可以使用。开发时，我们需要两个都写上(zoom,overflow)保证兼容性。在本例中，我们将box1的样式中设置overflow:hidden，就可以解决问题。 这个方法是最简单的处理方式而且一般不会出现错误。看起来开启BFC/HasLayout就足以解决这个问题了。其实不然，所谓副作用最小的意思是：在某种情况下还是会产生副作用。例如：在使用BFC时，如果在父元素中有相对定位的元素，overflow设置为hidden，那么相对定位的元素移动到父元素以外的时候，就会看不到。除了这种情况其他情况没有问题。 3.使用clear&emsp;&emsp;这时候轮到一个强力的样式出场了:clear。clear顾名思义，是清除掉浮动元素对指定元素的影响。可选值有left,right,both。其中both的意思是清除左右浮动中影响最大的那个，而不是两边都清除，需要注意。使用clear来解决本问题的思路是：在box1的最后面加上一个子元素div叫做clear，让它达成一个占位的效果：1234567&lt;body&gt; &lt;div class="box1"&gt; &lt;div class="box2"&gt;&lt;/div&gt; &lt;div class="clear"&gt;abc&lt;/div&gt; &lt;/div&gt; &lt;div class="box3"&gt;&lt;/div&gt;&lt;/body&gt; 我们知道clear的所谓“清除浮动元素的影响”的意思就是，如果对我造成了影响的浮动元素它不是浮动元素的话我所处的位置在哪，清除浮动影响后我就还在哪。那么在本例中，假设box2不是浮动元素(也就是最初的情况)那么这时的效果图应该如下。其中abc这一行，就是我们新加的div.clear。 我们如果对.clear进行设置clear样式，那么就会保证在box2变成浮动元素后，abc所在的位置不会受到box2浮动的影响而上浮，还是停留在原地。也就是说，设置clear样式后，页面的表现效果和上面的效果图将不变。现在我们理解了abc这行”占位”所起到的作用——保持原有位置不变，撑起box1的高度，让它不会塌陷。现在要做的，就是将abc删掉，它只是一个让占位这个概念看起来更直观的工具。删除abc以后，高度塌陷问题将解决。 4.最终方案&emsp;&emsp;其实第三种方案不能说是完美方案，因为高度塌陷问题说到底是样式问题，是表现的问题。我们用结构去解决一个表现的问题，添加了多余的无用标签，无疑是一种负担。我们在设计时一定要将结构和表现分开，所以我们尝试只使用css来解决这个问题。原理还是使用clear。但是我们这次不添加新标签。我们当时添加新标签时是在box1的最末尾处添加的。同时这个标签也没有内容，只是设置了clear样式。那么我们就可以给box1再添加一个类叫做clearfix12345&lt;body&gt; &lt;div class="box1 clearfix"&gt; &lt;div class="box2"&gt;&lt;/div&gt; &lt;/div&gt;&lt;/body&gt; 对clearfix使用after伪类选择器来选中最末尾处。12345678.clearfix:after&#123; content: ""; clear: both; display: block; /*将行内元素转化为块元素*/ &#125; .clearfix&#123; zoom: 1; &#125; 这才堪称是最完美的解决方法。由于IE6不支持after伪类我们还是要使用HasLayout解决，所以最后记得写上zoom:1;。]]></content>
+      <categories>
+        <category>前端技术</category>
+      </categories>
+      <tags>
+        <tag>HTML</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[微信小程序中的两种导入方式]]></title>
+    <url>%2F2019%2F03%2F04%2F19-3-4%2F</url>
+    <content type="text"></content>
+      <categories>
+        <category>微信小程序</category>
+      </categories>
+      <tags>
+        <tag>微信小程序</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[linux编译时报错:undefined reference to memcpy@GLIBC_2.14]]></title>
+    <url>%2F2019%2F03%2F01%2F19-3-1%2F</url>
+    <content type="text"><![CDATA[对已经写好的模块进行make，结果出现了以下错误：1234/usr/local/glibc-2.14/lib/libnsl.so.1:undefined reference to 'memcpy@GLIBC_2.14'/usr/local/glibc-2.14/lib/libnsl.so.1:undefined reference to '__lib_rpc_getport@GLIBC_PRIVATE'collect2: ld returned 1 exit statusmake: *** [../../../product/release/m_echo] Error 1 初步判断是缺少对应的库，使用string命令查看现有系统的glibc版本，发现并不存在该版本（2.14）的GLIBC，应该是libnsl.so所需的编译环境比当前系统版本要高，但也不确定。 先查看环境变量:echo $LD_LIBRARY_PATH,显示为/usr/local/glibc-2.14/lib: 但是我们目前并没有这个版本，它glibc的默认环境变量是一个并不存在的目录，找不到库编译当然会报错。 直接进行安装即可解决。 我是通过export命令将环境变量置空，再进行编译也能成功。如果你安装后也没有解决，或者安装不成功，又或者网络原因无法安装也可以尝试我的这个办法export LD_LIBRARY_PATH=&quot;&quot; 当然，通过export命令设置的环境变量每次重启shell终端时就会重置，每次都要重新设置。我们可以通过修改文件每次开机时自动进行export。 可以修改/etc/profile文件，在最底下加入我们的环境变量。但是最好不要这么做，因为该文件会影响这个系统上所有的用户。我们只需要让自己的用户生效就可以了。 所以我们需要修改的路径为 /home/xxx(xxx为你的用户名)/.bash_profile,在最底下加入export LD_LIBRARY_PATH=””即可。]]></content>
+      <categories>
+        <category>Linux相关</category>
+      </categories>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[Lua中的泛型for循环中的一个小问题]]></title>
     <url>%2F2019%2F02%2F22%2F19-2-22%2F</url>
     <content type="text"><![CDATA[之前公司需要编写一个lua脚本进行相关的功能测试，于是之前没用过这个语言的我开始了对它的学习。其中泛型for循环的写法如下： 1234a = &#123;"one","two","three"&#125;for i,v in ipairs(a) do print(i,v)end 这里是直接使用ipairs迭代器函数对a这个table进行了遍历，从而打印出a这个表的全部字段。看到这里，我想到了除了加上ipairs或者pairs，还会不会有其他的遍历方法，比如我直接加上表名： 12for i,v in a do... 这样是否也可以达到遍历的效果？首先在网上进行查询，发现有人问了这个问题，并且在提问中非常肯定的说这个写法没有任何问题（他给出的例子是一个游戏脚本），并且询问其中的原理。然而我自己试了下这种用法，并不能通过语法检查。 继续进行搜索，在各种文章博客网站中见到的泛型for后面加的全都是ipairs或者pairs，并且将这两者的区别讲了一遍又一遍。但是我始终没有找到哪篇讲in的后面能不能加其他东西的文章，除了看到这么一个例子： 123456789101112function square(iteratorMaxCount,currentNumber) if currentNumber&lt;iteratorMaxCount then currentNumber = currentNumber+1 return currentNumber, currentNumber*currentNumber endend for i,n in square,3,0 --实现了1-3每个数字的平方遍历。do print(i,n)end 算是一种不同的用法吧。 还是直接看官方文档最省事，打开Lua manual，定位到For Statement中的generic for loop处。有如下说明:The generic for statement works over functions, called iterators. On each iteration, the iterator function is called to produce a new value, stopping when this new value is nil. The generic for loop has the following syntax: 12stat ::= for namelist in explist do block endnamelist ::= Name &#123;',' Name&#125; Note the following: explist is evaluated only once. Its results are an iterator function, a state, and an initial value for the first iterator variable. f, s, and var are invisible variables. The names are here for explanatory purposes only. You can use break to exit a for loop. The loop variables var_i are local to the loop; you cannot use their values after the for ends. If you need these values, then assign them to other variables before breaking or exiting the loop. 大意：泛型for语句中in后面跟的是叫做迭代器的东西(比如那个函数，比如ipairs)。每一次迭代函数都会产生一个新值，直到这个值为nil为止。 具体注意事项：迭代器返回3个值，分别是这个迭代器函数，一个状态常量，一个控制变量（对应for i,v中的i和v这两个变量。）迭代器只会初始化一次，即使后面有循环也不会多次初始化。 可以使用break退出循环，并且其中的i,v是局部变量，for结束后值不会保留。如果需要这个值需要自己在里面接收。 至此已经完全清楚了：泛型for循环后加的必须是一个返回三个参数的迭代器（迭代器函数+状态常量+控制变量），其他的写法均为错误。ipairs和pairs都会返回这三个参数，而我上面列举的那个遍历数字并输出其平方的例子中是直接显式传入3个参数的。]]></content>
