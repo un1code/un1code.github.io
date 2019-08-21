@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[原型对象prototype]]></title>
+    <url>%2F2019%2F08%2F20%2F%E5%8E%9F%E5%9E%8B%E5%AF%B9%E8%B1%A1prototype%2F</url>
+    <content type="text"></content>
+  </entry>
+  <entry>
     <title><![CDATA[js中的this指针]]></title>
     <url>%2F2019%2F04%2F15%2Fjs%E4%B8%AD%E7%9A%84this%E6%8C%87%E9%92%88%2F</url>
-    <content type="text"><![CDATA[this指针是什么&emsp;&emsp;this指针是作为一个隐藏的参数存在于函数中的。我们首先需要明确，它是一个参数，也是一个指针。解析器在每次调用函数的时候（注意：是每次调用）都会给函数中传一个隐藏的参数，这就是this。1234function f1()&#123; console.log(this); &#125;f1(); 以上代码是一个简单的函数。我们在调用时，可以看成这样：1f1(this); 同时我们在函数体中写下了在控制台打印this的语句。执行这段代码，在控制台中，我们可以看到打印出了一个叫做Window的对象。我们都知道Window对象是浏览器创建的用来包含所有全局变量及方法的一个对象。我们的f1写在全局里，自然是Window的方法。即就是this指向了这个方法的来源(Window)。 再看以下代码：12345678910111213var name="全局name";var obj = &#123; name:"tom", age:99, sayName:getName&#125;function getName()&#123; console.log(this.name);&#125;//getName();//obj.sayName(); 我们看最后两行。如果去掉getName的注释，那么控制台就输出：全局name。如果去掉obj.sayName()的注释，控制台就输出：tom。首先第一种调用方法我们知道它的this指向的是Window，所以取的是Window里的全局变量name。然而第二种调用方法中，我们是将函数作为对象的属性写了进去，然后通过对象obj来调用这个函数。那么这时，由于是obj调用的该函数，this指向的就是obj，取的name当然也是函数内作用域的name。简而言之一句话，谁调用的函数，this指针就指向谁。全局调用指向Window，对象调用指向对象。就是这么简单。 this指针有什么用？类似于上面的例子：123456789101112131415161718192021var name="全局name";var obj1 = &#123; name:"tom", age:99, sayName:getName&#125;var obj2 = &#123; name:"jerry", age:99, sayName:getName&#125;function getName()&#123; console.log(this.name);&#125;//getName();//obj1.sayName();//obj2.sayName(); 这就是一个实际应用的例子。全局变量、不同的函数作用域内都有一个同名变量。我们在编写获取该变量的函数时，只需要使用this指针就能轻松获取自己想要的作用域下的那个属性值。]]></content>
+    <content type="text"><![CDATA[this指针是什么&emsp;&emsp;this指针是作为一个隐藏的参数存在于函数中的。我们首先需要明确，它是一个参数，也是一个指针。解析器在每次调用函数的时候（注意：是每次调用）都会给函数中传一个隐藏的参数，这就是this。1234function f1()&#123; console.log(this); &#125;f1(); 以上代码是一个简单的函数。我们在调用时，可以看成这样：1f1(this); 同时我们在函数体中写下了在控制台打印this的语句。执行这段代码，在控制台中，我们可以看到打印出了一个叫做Window的对象。我们都知道Window对象是浏览器创建的用来包含所有全局变量及方法的一个对象。我们的f1写在全局里，自然是Window的方法。即就是this指向了这个方法的来源(Window)。 再看以下代码：12345678910111213var name="全局name";var obj = &#123; name:"tom", age:99, sayName:getName&#125;function getName()&#123; console.log(this.name);&#125;//getName();//obj.sayName(); 我们看最后两行。如果去掉getName的注释，那么控制台就输出：全局name。如果去掉obj.sayName()的注释，控制台就输出：tom。首先第一种调用方法我们知道它的this指向的是Window，所以取的是Window里的全局变量name。然而第二种调用方法中，我们是将函数作为对象的属性写了进去，然后通过对象obj来调用这个函数。那么这时，由于是obj调用的该函数，this指向的就是obj，取的name当然也是函数内作用域的name。简而言之一句话，谁调用的函数，this指针就指向谁。全局调用指向Window，对象调用指向对象，使用new将函数作为构造函数调用就指向新创建的对象。就是这么简单。 this指针有什么用？类似于上面的例子：123456789101112131415161718192021var name="全局name";var obj1 = &#123; name:"tom", age:99, sayName:getName&#125;var obj2 = &#123; name:"jerry", age:99, sayName:getName&#125;function getName()&#123; console.log(this.name);&#125;//getName();//obj1.sayName();//obj2.sayName(); 这就是一个实际应用的例子。全局变量、不同的函数作用域内都有一个同名变量。我们在编写获取该变量的函数时，只需要使用this指针就能轻松获取自己想要的作用域下的那个属性值。另外，this的指向是可以我们来手动改变的。只需要调用函数的call()或者apply()方法。比如上面的代码，我在obj1.sayName()处稍作修改：obj1.sayName.call(obj2);这样的话原指向obj1的this就被指向obj2了。]]></content>
       <categories>
         <category>前端技术</category>
       </categories>
